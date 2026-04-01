@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculation History</title>
+  <link rel="stylesheet" href="/static/css/history.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>Calculation History</h1>
+      <a href="/" class="back-link">&larr; Back to Calculator</a>
+    </div>
+    <div id="status" class="status"></div>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Expression</th>
+          <th>Result</th>
+          <th>Time (UTC)</th>
+        </tr>
+      </thead>
+      <tbody id="history-body">
+        <tr><td colspan="4" class="empty">No calculations yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <script src="/static/js/history.js"></script>
+</body>
+</html>
