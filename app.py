@@ -119,6 +119,10 @@ def uloz_do_databazy(cislo1, cislo2, operacia, vysledok):
     return nove_id
 
 
+# Inicializácia databázy pri importe modulu — funguje aj pod Gunicorn (Azure)
+inicializuj_databazu()
+
+
 def uloz_prevod(hodnota, typ, vysledok, popis):
     """
     Uloží jeden záznam o prevode jednotiek do tabuľky 'prevody'.
