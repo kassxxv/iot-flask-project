@@ -1,0 +1,1170 @@
+<!--
+=============================================================================
+FRONTEND A — Administračný panel (Kalkulačka + Prevodník)
+=============================================================================
+Dizajn: macOS-style desktop okno s dvoma tabmi
+  Tab 1: Kalkulačka (pôvodná funkčnosť)
+  Tab 2: Prevodník jednotiek (zadanie na doma)
+
+HTML prvky podľa zadania:
+  ✅ Text input   — zadanie čísel / hodnoty
+  ✅ Check button  — výber operácie (radio buttons v kalkulačke)
+  ✅ Select        — výber typu prevodu v prevodníku
+  ✅ Submit button — odoslanie formulára
+
+Komunikácia: GET request → parametre viditeľné v URL riadku prehliadača
+=============================================================================
+-->
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Admin — Kalkulačka</title>
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════
+           RESET & BASE
+           ═══════════════════════════════════════════════════════════ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* macOS SF Pro font stack */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+                         'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a1a;
+            background-image:
+                radial-gradient(ellipse at 25% 15%, rgba(40, 40, 80, 0.6) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 85%, rgba(20, 40, 30, 0.5) 0%, transparent 55%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           macOS WINDOW SHELL
+           ═══════════════════════════════════════════════════════════ */
+        .mac-window {
+            width: 980px;
+            max-width: 100%;
+            background: #1c1c1e;
+            border-radius: 12px;
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 4px 16px rgba(0, 0, 0, 0.6),
+                0 32px 80px rgba(0, 0, 0, 0.85);
+            overflow: hidden;
+        }
+
+        /* ─── Title Bar ─── */
+        .mac-titlebar {
+            height: 38px;
+            background: #2c2c2e;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Traffic lights */
+        .mac-traffic {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mac-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: default;
+            position: relative;
+            transition: filter 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: transparent;
+        }
+
+        .mac-traffic:hover .mac-dot { color: rgba(0,0,0,0.5); }
+        .mac-dot.red    { background: #ff5f57; border: 0.5px solid rgba(0,0,0,0.18); }
+        .mac-dot.yellow { background: #febc2e; border: 0.5px solid rgba(0,0,0,0.18); }
+        .mac-dot.green  { background: #28c840; border: 0.5px solid rgba(0,0,0,0.18); }
+
+        .mac-titlebar-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: 0.1px;
+            pointer-events: none;
+        }
+
+        /* ─── Content Area ─── */
+        .mac-content {
+            display: flex;
+            height: 620px;
+        }
+
+        /* ─── Sidebar ─── */
+        .mac-sidebar {
+            width: 272px;
+            min-width: 272px;
+            background: rgba(28, 28, 30, 0.95);
+            backdrop-filter: blur(20px) saturate(1.6);
+            -webkit-backdrop-filter: blur(20px) saturate(1.6);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 16px 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* macOS-style section label */
+        .sidebar-label {
+            font-size: 10.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: rgba(255, 255, 255, 0.28);
+            padding: 0 4px;
+            margin-bottom: 6px;
+        }
+
+        /* URL preview in sidebar */
+        .sidebar-url {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            color: #6e7a8a;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        .sidebar-url .hl-domain { color: #5ac8fa; }
+        .sidebar-url .hl-path   { color: #30d158; }
+        .sidebar-url .hl-param  { color: #ff9f0a; }
+        .sidebar-url .hl-val    { color: #e0e0e0; }
+
+        /* Info tip */
+        .sidebar-tip {
+            background: rgba(255, 159, 10, 0.08);
+            border: 1px solid rgba(255, 159, 10, 0.2);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.5;
+        }
+
+        .sidebar-tip strong { color: #ff9f0a; }
+
+        .sidebar-tip code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 10.5px;
+            color: #ff9f0a;
+        }
+
+        /* History table in sidebar */
+        .sidebar-history {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-history table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+
+        .sidebar-history th {
+            color: rgba(255,255,255,0.28);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 6px 4px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-weight: 600;
+        }
+
+        .sidebar-history td {
+            padding: 7px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.6);
+        }
+
+        .sidebar-history td.val-col {
+            color: #ff9f0a;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* ─── Main Area ─── */
+        .mac-main {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+            background: #1c1c1e;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           macOS SEGMENTED CONTROL (tabs)
+           ═══════════════════════════════════════════════════════════ */
+        .mac-segmented {
+            display: inline-flex;
+            background: #3a3a3c;
+            border-radius: 8px;
+            padding: 2px;
+            margin-bottom: 18px;
+            align-self: flex-start;
+        }
+
+        .mac-seg-btn {
+            padding: 5px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .mac-seg-btn.active {
+            background: #636366;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+
+        /* Tab panels */
+        .tab-panel { display: none; flex-direction: column; flex: 1; }
+        .tab-panel.active { display: flex; }
+
+        /* ═══════════════════════════════════════════════════════════
+           macOS CALCULATOR
+           ═══════════════════════════════════════════════════════════ */
+
+        /* Black display area */
+        .calc-display {
+            background: #000;
+            border-radius: 10px;
+            padding: 14px 18px 10px;
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .calc-display-expr {
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            min-height: 18px;
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+        }
+
+        .calc-display-number {
+            font-size: 52px;
+            font-weight: 200;
+            color: #fff;
+            letter-spacing: -2px;
+            line-height: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Result from backend */
+        .calc-result-label {
+            font-size: 11px;
+            color: rgba(255,159,10,0.6);
+            text-align: right;
+            min-height: 16px;
+            margin-top: 4px;
+        }
+
+        /* Button grid */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .calc-btn {
+            height: 64px;
+            border: none;
+            border-radius: 50%;
+            font-size: 22px;
+            font-weight: 400;
+            font-family: inherit;
+            cursor: pointer;
+            transition: filter 0.1s;
+            outline: none;
+            line-height: 1;
+        }
+
+        .calc-btn:active { filter: brightness(1.5); }
+
+        /* Three color tiers — exact macOS Calculator colors */
+        .btn-dark   { background: #333335; color: #fff; }
+        .btn-medium { background: #9b9b9b; color: #1c1c1e; font-weight: 500; }
+        .btn-orange { background: #ff9f0a; color: #fff; font-weight: 500; }
+        .btn-orange.active-op { background: #fff; color: #ff9f0a; }
+
+        /* 0 button spans 2 columns, pill shape */
+        .btn-zero {
+            grid-column: span 2;
+            border-radius: 32px;
+            text-align: left;
+            padding-left: 24px;
+        }
+
+        /* Error display */
+        .calc-error {
+            color: #ff6b6b;
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Backend result pill (shown after = press) */
+        .calc-backend-result {
+            background: rgba(255, 159, 10, 0.1);
+            border: 1px solid rgba(255, 159, 10, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 10px;
+            display: none;
+        }
+
+        .calc-backend-result .res-num {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ff9f0a;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           PREVODNÍK (Converter) panel
+           ═══════════════════════════════════════════════════════════ */
+        .conv-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .conv-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 14px;
+        }
+
+        /* Text input for converter */
+        .conv-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+            margin-bottom: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .conv-input:focus {
+            border-color: rgba(255,159,10,0.6);
+            box-shadow: 0 0 0 3px rgba(255,159,10,0.12);
+        }
+
+        /* Select dropdown */
+        .conv-select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 14px;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .conv-select option {
+            background: #2c2c2e;
+            color: #fff;
+        }
+
+        /* Submit button — macOS orange style */
+        .conv-submit {
+            width: 100%;
+            padding: 11px;
+            background: #ff9f0a;
+            color: #1c1c1e;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: filter 0.15s;
+        }
+
+        .conv-submit:hover   { filter: brightness(1.08); }
+        .conv-submit:active  { filter: brightness(0.9); }
+        .conv-submit:disabled { opacity: 0.5; cursor: default; }
+
+        /* URL preview under converter */
+        .conv-url {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 11px;
+            color: #6e7a8a;
+            word-break: break-all;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+
+        .conv-url .hl { color: #ff9f0a; }
+
+        /* Converter result box */
+        .conv-result {
+            background: rgba(255,159,10,0.08);
+            border: 1px solid rgba(255,159,10,0.22);
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-top: 14px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .conv-result.visible { display: block; }
+
+        .conv-result-num {
+            font-size: 28px;
+            font-weight: 600;
+            color: #ff9f0a;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .conv-result-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Converter history table */
+        .conv-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .conv-history-table th {
+            color: rgba(255,255,255,0.28);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .conv-history-table td {
+            padding: 8px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.6);
+        }
+
+        .conv-history-table td.popis-col {
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           SHARED ANIMATIONS
+           ═══════════════════════════════════════════════════════════ */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     macOS WINDOW
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="mac-window">
+
+    <!-- Title Bar -->
+    <div class="mac-titlebar">
+        <div class="mac-traffic">
+            <div class="mac-dot red">✕</div>
+            <div class="mac-dot yellow">−</div>
+            <div class="mac-dot green">+</div>
+        </div>
+        <span class="mac-titlebar-title">IoT Admin — Kalkulačka &amp; Prevodník</span>
+    </div>
+
+    <!-- Content: Sidebar + Main -->
+    <div class="mac-content">
+
+        <!-- ─── SIDEBAR ─── -->
+        <div class="mac-sidebar">
+
+            <!-- URL Preview -->
+            <div>
+                <div class="sidebar-label">GET Request URL</div>
+                <div class="sidebar-url" id="urlPreview">
+                    <span id="urlText">/vypocet?cislo1=_&amp;cislo2=_&amp;operacia=plus</span>
+                </div>
+            </div>
+
+            <!-- Educational tip -->
+            <div class="sidebar-tip">
+                <strong>📖 Ako to funguje?</strong><br>
+                Formulár odosiela dáta pomocou <code>GET</code> requestu.
+                Parametre sú viditeľné v URL, napr.:
+                <code>/vypocet?cislo1=10&amp;cislo2=5&amp;operacia=plus</code>
+            </div>
+
+            <!-- Calculation history -->
+            <div class="sidebar-history">
+                <div class="sidebar-label">História výpočtov</div>
+                <div id="historiaObsah">
+                    <p style="color: rgba(255,255,255,0.25); font-size: 12px; padding: 4px;">Načítavam...</p>
+                </div>
+            </div>
+
+        </div>
+        <!-- end sidebar -->
+
+        <!-- ─── MAIN ─── -->
+        <div class="mac-main">
+
+            <!-- Segmented tab control -->
+            <div class="mac-segmented">
+                <button class="mac-seg-btn active" data-tab="kalkulacka"
+                        onclick="activateTab('kalkulacka')">
+                    🧮 Kalkulačka
+                </button>
+                <button class="mac-seg-btn" data-tab="prevodnik"
+                        onclick="activateTab('prevodnik')">
+                    🔄 Prevodník
+                </button>
+            </div>
+
+            <!-- ══════════════════════════════
+                 TAB 1: CALCULATOR
+                 ══════════════════════════════ -->
+            <div id="panel-kalkulacka" class="tab-panel active">
+
+                <!-- Black display -->
+                <div class="calc-display">
+                    <div class="calc-display-expr" id="calcExpr"></div>
+                    <div class="calc-display-number" id="calcDisplay">0</div>
+                </div>
+
+                <!-- Hidden form fields fed by calcState -->
+                <input type="hidden" id="cislo1" value="">
+                <input type="hidden" id="cislo2" value="">
+                <input type="hidden" id="operacia" value="plus">
+
+                <!-- Button grid — macOS Calculator layout -->
+                <!--
+                    Row 1: AC  +/-  %  ÷
+                    Row 2:  7   8   9  ×
+                    Row 3:  4   5   6  −
+                    Row 4:  1   2   3  +
+                    Row 5:  0 (wide)  .  =
+                -->
+                <div class="calc-grid">
+                    <button class="calc-btn btn-medium" onclick="calcPress('AC')">AC</button>
+                    <button class="calc-btn btn-medium" onclick="calcPress('+/-')">+/-</button>
+                    <button class="calc-btn btn-medium" onclick="calcPress('%')">%</button>
+                    <button class="calc-btn btn-orange" id="btn-deleno" onclick="calcPress('deleno')">÷</button>
+
+                    <button class="calc-btn btn-dark" onclick="calcPress('7')">7</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('8')">8</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('9')">9</button>
+                    <button class="calc-btn btn-orange" id="btn-krat" onclick="calcPress('krat')">×</button>
+
+                    <button class="calc-btn btn-dark" onclick="calcPress('4')">4</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('5')">5</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('6')">6</button>
+                    <button class="calc-btn btn-orange" id="btn-minus" onclick="calcPress('minus')">−</button>
+
+                    <button class="calc-btn btn-dark" onclick="calcPress('1')">1</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('2')">2</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('3')">3</button>
+                    <button class="calc-btn btn-orange" id="btn-plus" onclick="calcPress('plus')">+</button>
+
+                    <button class="calc-btn btn-dark btn-zero" onclick="calcPress('0')">0</button>
+                    <button class="calc-btn btn-dark" onclick="calcPress('.')">.</button>
+                    <button class="calc-btn btn-orange" onclick="calcPress('=')"> = </button>
+                </div>
+
+                <!-- Error display -->
+                <div class="calc-error" id="chybaMsg"></div>
+
+                <!-- Result from backend -->
+                <div class="calc-backend-result" id="calcBackendResult">
+                    <span class="res-num" id="calcResNum"></span>
+                    <span id="calcResDetail"></span>
+                </div>
+
+            </div>
+            <!-- end tab-panel kalkulacka -->
+
+            <!-- ══════════════════════════════
+                 TAB 2: UNIT CONVERTER
+                 ══════════════════════════════
+                 Zadanie na doma:
+                 ✅ Text input (hodnotaVstup)
+                 ✅ Select (typVstup)
+                 ✅ Submit button
+                 ✅ GET params viditeľné v URL
+                 ✅ Komentovaný kód
+                 ══════════════════════════════ -->
+            <div id="panel-prevodnik" class="tab-panel">
+
+                <div class="conv-card">
+                    <h3>Prevodník jednotiek</h3>
+
+                    <form id="prevodnikForm" onsubmit="return odosliPrevod(event)">
+
+                        <!-- TEXT INPUT: Hodnota na prevod -->
+                        <input type="number" id="hodnotaVstup" class="conv-input"
+                               placeholder="Zadajte hodnotu (napr. 42)"
+                               step="any" required
+                               oninput="aktualizujPrevodnikUrl()">
+
+                        <!--
+                            SELECT (Check Button variant):
+                            Dropdown na výber typu prevodu.
+                            Odoslanie cez GET → typ= bude viditeľný v URL.
+                        -->
+                        <select id="typVstup" class="conv-select"
+                                onchange="aktualizujPrevodnikUrl()">
+                            <option value="km_na_mile">km → míle</option>
+                            <option value="c_na_f">°C → °F</option>
+                            <option value="kg_na_lbs">kg → libry (lbs)</option>
+                            <option value="m_na_ft">m → stopy (ft)</option>
+                        </select>
+
+                        <!-- SUBMIT BUTTON: Odoslanie GET requestu -->
+                        <button type="submit" class="conv-submit" id="convBtn">
+                            Previesť
+                        </button>
+
+                    </form>
+
+                    <!-- GET URL preview — viditeľné parametre (požiadavka zadania) -->
+                    <div class="conv-url" id="convUrlPreview">
+                        <strong style="color: rgba(255,255,255,0.3);">GET URL:</strong><br>
+                        <span id="convUrlText">/prevodnik?hodnota=_&amp;typ=km_na_mile</span>
+                    </div>
+
+                    <!-- Výsledok prevodu -->
+                    <div class="conv-result" id="convResult">
+                        <span class="conv-result-num" id="convResultNum"></span>
+                        <span class="conv-result-desc" id="convResultDesc"></span>
+                    </div>
+
+                </div>
+
+                <!-- Historia prevodov -->
+                <div class="conv-card">
+                    <h3>História prevodov</h3>
+                    <div id="convHistoriaObsah">
+                        <p style="color: rgba(255,255,255,0.25); font-size: 12px;">Načítavam...</p>
+                    </div>
+                </div>
+
+            </div>
+            <!-- end tab-panel prevodnik -->
+
+        </div>
+        <!-- end mac-main -->
+
+    </div>
+    <!-- end mac-content -->
+
+</div>
+<!-- end mac-window -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+    // ── KONFIGURÁCIA ──────────────────────────────────────────────────
+    // Automaticky použije aktuálnu doménu (funguje lokálne aj na Azure)
+    const BACKEND_URL = window.location.origin;
+
+    // ══════════════════════════════════════════════════════════════════
+    // TAB SWITCHING
+    // ══════════════════════════════════════════════════════════════════
+    function activateTab(name) {
+        document.querySelectorAll('.mac-seg-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.mac-seg-btn[data-tab="${name}"]`).classList.add('active');
+        document.getElementById(`panel-${name}`).classList.add('active');
+
+        // Update sidebar URL preview label based on active tab
+        if (name === 'prevodnik') aktualizujPrevodnikUrl();
+        else aktualizujUrlPreview();
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CALCULATOR STATE
+    // ══════════════════════════════════════════════════════════════════
+    // calcState bridges the macOS button grid to the existing backend call.
+    // When = is pressed, cislo1 + cislo2 + operacia hidden inputs are filled
+    // and odosliFormular() is called exactly as before.
+
+    const calcState = {
+        buffer: '',      // current digit buffer being typed
+        cislo1: '',      // first operand (set when operator pressed)
+        cislo2: '',      // second operand (set when = pressed)
+        operacia: '',    // current operator
+        phase: 'input1', // 'input1' | 'input2' | 'result'
+        justResult: false
+    };
+
+    const opSymbols = { plus: '+', minus: '−', krat: '×', deleno: '÷' };
+
+    function getDisplayVal() {
+        return calcState.buffer || '0';
+    }
+
+    function updateDisplay(val) {
+        // Truncate long numbers
+        let display = val;
+        if (display.length > 10) display = parseFloat(val).toPrecision(9);
+        document.getElementById('calcDisplay').textContent = display || '0';
+    }
+
+    function updateExpr() {
+        const expr = document.getElementById('calcExpr');
+        if (calcState.phase === 'input2' && calcState.cislo1 !== '' && calcState.operacia) {
+            expr.textContent = `${calcState.cislo1} ${opSymbols[calcState.operacia]}`;
+        } else {
+            expr.textContent = '';
+        }
+    }
+
+    // Highlight active operator button
+    function highlightOp(op) {
+        ['plus','minus','krat','deleno'].forEach(o => {
+            const btn = document.getElementById('btn-' + o);
+            if (btn) btn.classList.toggle('active-op', o === op);
+        });
+    }
+
+    function calcPress(val) {
+        // Hide error and previous backend result on new input
+        document.getElementById('chybaMsg').style.display = 'none';
+
+        // ── DIGITS ──
+        if ('0123456789'.includes(val)) {
+            if (calcState.justResult) {
+                // Start fresh after a result
+                calcState.buffer = val === '0' ? '0' : val;
+                calcState.cislo1 = '';
+                calcState.operacia = '';
+                calcState.phase = 'input1';
+                calcState.justResult = false;
+                highlightOp(null);
+            } else if (calcState.phase === 'result') {
+                calcState.buffer = val;
+                calcState.phase = 'input2';
+            } else {
+                if (calcState.buffer === '0' && val !== '.') {
+                    calcState.buffer = val;
+                } else {
+                    calcState.buffer += val;
+                }
+            }
+            updateDisplay(calcState.buffer);
+            aktualizujUrlPreview();
+            updateExpr();
+            return;
+        }
+
+        // ── DECIMAL ──
+        if (val === '.') {
+            if (!calcState.buffer.includes('.')) {
+                calcState.buffer = (calcState.buffer || '0') + '.';
+                updateDisplay(calcState.buffer);
+            }
+            return;
+        }
+
+        // ── AC (All Clear) ──
+        if (val === 'AC') {
+            calcState.buffer = '0';
+            calcState.cislo1 = '';
+            calcState.cislo2 = '';
+            calcState.operacia = '';
+            calcState.phase = 'input1';
+            calcState.justResult = false;
+            highlightOp(null);
+            updateDisplay('0');
+            updateExpr();
+            document.getElementById('calcExpr').textContent = '';
+            document.getElementById('calcBackendResult').style.display = 'none';
+            aktualizujUrlPreview();
+            return;
+        }
+
+        // ── +/- TOGGLE ──
+        if (val === '+/-') {
+            if (calcState.buffer && calcState.buffer !== '0') {
+                if (calcState.buffer.startsWith('-')) {
+                    calcState.buffer = calcState.buffer.slice(1);
+                } else {
+                    calcState.buffer = '-' + calcState.buffer;
+                }
+                updateDisplay(calcState.buffer);
+            }
+            return;
+        }
+
+        // ── PERCENT ──
+        if (val === '%') {
+            if (calcState.buffer) {
+                calcState.buffer = String(parseFloat(calcState.buffer) / 100);
+                updateDisplay(calcState.buffer);
+            }
+            return;
+        }
+
+        // ── OPERATORS: plus, minus, krat, deleno ──
+        if (['plus', 'minus', 'krat', 'deleno'].includes(val)) {
+            if (calcState.buffer !== '') {
+                calcState.cislo1 = calcState.buffer;
+                calcState.buffer = '';
+            }
+            calcState.operacia = val;
+            calcState.phase = 'input2';
+            calcState.justResult = false;
+            highlightOp(val);
+            updateExpr();
+            // Update hidden field and URL preview
+            document.getElementById('operacia').value = val;
+            document.getElementById('cislo1').value = calcState.cislo1;
+            aktualizujUrlPreview();
+            return;
+        }
+
+        // ── EQUALS ──
+        if (val === '=') {
+            if (!calcState.cislo1 || !calcState.operacia || calcState.buffer === '') return;
+
+            calcState.cislo2 = calcState.buffer;
+            highlightOp(null);
+
+            // Fill hidden inputs
+            document.getElementById('cislo1').value = calcState.cislo1;
+            document.getElementById('cislo2').value = calcState.cislo2;
+            document.getElementById('operacia').value = calcState.operacia;
+
+            // Show loading state on display
+            document.getElementById('calcExpr').textContent =
+                `${calcState.cislo1} ${opSymbols[calcState.operacia]} ${calcState.cislo2} =`;
+
+            aktualizujUrlPreview();
+
+            // Send to backend
+            odosliFormular();
+            return;
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // URL PREVIEW (Calculator tab)
+    // ══════════════════════════════════════════════════════════════════
+    function aktualizujUrlPreview() {
+        const c1 = document.getElementById('cislo1').value || calcState.buffer || '_';
+        const c2 = document.getElementById('cislo2').value || '_';
+        const op = document.getElementById('operacia').value || 'plus';
+
+        const path = `/vypocet?cislo1=${c1}&cislo2=${c2}&operacia=${op}`;
+        document.getElementById('urlText').innerHTML =
+            `<span class="hl-domain">${BACKEND_URL}</span>` +
+            `<span class="hl-path">/vypocet</span>` +
+            `?<span class="hl-param">cislo1</span>=<span class="hl-val">${c1}</span>` +
+            `&amp;<span class="hl-param">cislo2</span>=<span class="hl-val">${c2}</span>` +
+            `&amp;<span class="hl-param">operacia</span>=<span class="hl-val">${op}</span>`;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // SUBMIT TO BACKEND (Calculator)
+    // ══════════════════════════════════════════════════════════════════
+    async function odosliFormular() {
+        const cislo1 = document.getElementById('cislo1').value;
+        const cislo2 = document.getElementById('cislo2').value;
+        const operacia = document.getElementById('operacia').value;
+
+        if (!cislo1 || !cislo2) return;
+
+        document.getElementById('chybaMsg').style.display = 'none';
+        document.getElementById('calcBackendResult').style.display = 'none';
+
+        try {
+            // GET request — parametre viditeľné v URL (kľúčové pre výuku)
+            const url = `${BACKEND_URL}/vypocet?cislo1=${cislo1}&cislo2=${cislo2}&operacia=${operacia}`;
+            console.log('📤 GET request:', url);
+
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log('📥 Odpoveď:', data);
+
+            if (data.chyba) {
+                zobrazChybu(data.chyba);
+            } else {
+                zobrazVysledok(data);
+                nacitajHistoriu();
+            }
+        } catch (err) {
+            console.error('❌', err);
+            zobrazChybu('Nepodarilo sa spojiť so serverom.');
+        }
+    }
+
+    function zobrazVysledok(data) {
+        // Show result on the calculator display
+        const resStr = String(data.vysledok);
+        updateDisplay(resStr);
+        calcState.buffer = resStr;
+        calcState.phase = 'result';
+        calcState.justResult = true;
+
+        const symboly = { plus: '+', minus: '−', krat: '×', deleno: '÷' };
+        const sym = symboly[data.operacia] || '?';
+
+        // Show backend result info
+        const box = document.getElementById('calcBackendResult');
+        document.getElementById('calcResNum').textContent = data.vysledok;
+        document.getElementById('calcResDetail').textContent =
+            `${data.cislo1} ${sym} ${data.cislo2}  ·  #${data.id}  ·  ${data.cas}`;
+        box.style.display = 'block';
+    }
+
+    function zobrazChybu(text) {
+        const msg = document.getElementById('chybaMsg');
+        msg.textContent = '⚠️ ' + text;
+        msg.style.display = 'block';
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // HISTORY (Calculator) — renders into sidebar
+    // ══════════════════════════════════════════════════════════════════
+    async function nacitajHistoriu() {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/historia`);
+            const data = await response.json();
+            const container = document.getElementById('historiaObsah');
+
+            if (!data.length) {
+                container.innerHTML = '<p style="color:rgba(255,255,255,0.25);font-size:12px;padding:4px;">Zatiaľ žiadne výpočty.</p>';
+                return;
+            }
+
+            const symboly = { plus: '+', minus: '−', krat: '×', deleno: '÷' };
+            let html = '<table style="width:100%;border-collapse:collapse;font-size:11.5px;">';
+            html += '<tr><th style="color:rgba(255,255,255,0.28);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:4px 4px 6px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06);">Výpočet</th>';
+            html += '<th style="color:rgba(255,255,255,0.28);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:4px 4px 6px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.06);">=</th></tr>';
+
+            data.slice(0, 15).forEach(item => {
+                const sym = symboly[item.operacia] || '?';
+                html += `<tr>
+                    <td style="padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.55);font-size:11px;">${item.cislo1} ${sym} ${item.cislo2}</td>
+                    <td style="padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.04);color:#ff9f0a;font-weight:600;text-align:right;font-size:11px;">${item.vysledok}</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            document.getElementById('historiaObsah').innerHTML =
+                '<p style="color:rgba(255,107,107,0.6);font-size:12px;">Chyba načítania.</p>';
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CONVERTER — URL PREVIEW
+    // ══════════════════════════════════════════════════════════════════
+    function aktualizujPrevodnikUrl() {
+        const val = document.getElementById('hodnotaVstup').value || '_';
+        const typ = document.getElementById('typVstup').value;
+
+        document.getElementById('convUrlText').innerHTML =
+            `<span class="hl">${BACKEND_URL}</span>/prevodnik?hodnota=${val}&amp;typ=${typ}`;
+
+        // Also update sidebar URL preview when converter tab is active
+        const activeTab = document.querySelector('.mac-seg-btn.active');
+        if (activeTab && activeTab.dataset.tab === 'prevodnik') {
+            document.getElementById('urlText').innerHTML =
+                `<span class="hl-domain">${BACKEND_URL}</span>` +
+                `<span class="hl-path">/prevodnik</span>` +
+                `?<span class="hl-param">hodnota</span>=<span class="hl-val">${val}</span>` +
+                `&amp;<span class="hl-param">typ</span>=<span class="hl-val">${typ}</span>`;
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CONVERTER — SUBMIT
+    // ══════════════════════════════════════════════════════════════════
+    async function odosliPrevod(event) {
+        event.preventDefault();
+
+        const hodnota = document.getElementById('hodnotaVstup').value;
+        const typ = document.getElementById('typVstup').value;
+
+        if (!hodnota) return false;
+
+        const btn = document.getElementById('convBtn');
+        btn.innerHTML = '<span class="spinner"></span> Prevádzam...';
+        btn.disabled = true;
+
+        try {
+            // GET request — parametre viditeľné v URL (požiadavka zadania)
+            const url = `${BACKEND_URL}/prevodnik?hodnota=${hodnota}&typ=${typ}`;
+            console.log('📤 GET request (prevodník):', url);
+
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log('📥 Odpoveď:', data);
+
+            if (data.chyba) {
+                alert('⚠️ ' + data.chyba);
+            } else {
+                // Zobrazíme výsledok
+                document.getElementById('convResultNum').textContent = data.vysledok;
+                document.getElementById('convResultDesc').textContent = data.popis + '  ·  #' + data.id;
+                document.getElementById('convResult').classList.add('visible');
+                nacitajPrevody(); // Obnovíme históriu
+            }
+        } catch (err) {
+            console.error('❌', err);
+            alert('Nepodarilo sa spojiť so serverom.');
+        } finally {
+            btn.innerHTML = 'Previesť';
+            btn.disabled = false;
+        }
+
+        return false;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CONVERTER — HISTORY
+    // ══════════════════════════════════════════════════════════════════
+    async function nacitajPrevody() {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/prevody`);
+            const data = await response.json();
+            const container = document.getElementById('convHistoriaObsah');
+
+            if (!data.length) {
+                container.innerHTML = '<p style="color:rgba(255,255,255,0.25);font-size:12px;">Zatiaľ žiadne prevody.</p>';
+                return;
+            }
+
+            let html = '<table class="conv-history-table"><tr>';
+            html += '<th>Prevod</th><th>Čas</th></tr>';
+
+            data.slice(0, 20).forEach(item => {
+                html += `<tr>
+                    <td class="popis-col">${item.popis}</td>
+                    <td style="color:rgba(255,255,255,0.3);font-size:10.5px;white-space:nowrap;">${item.cas}</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            document.getElementById('convHistoriaObsah').innerHTML =
+                '<p style="color:rgba(255,107,107,0.6);font-size:12px;">Chyba načítania.</p>';
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════════════════════
+    aktualizujUrlPreview();
+    aktualizujPrevodnikUrl();
+    nacitajHistoriu();
+    nacitajPrevody();
+</script>
+</body>
+</html>
