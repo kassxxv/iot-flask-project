@@ -3,941 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Admin — Kalkulačka & Prevodník</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
-                         'Helvetica Neue', Arial, sans-serif;
-            background: #1a1a1a;
-            background-image:
-                radial-gradient(ellipse at 20% 10%, rgba(40,40,80,0.55) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 90%, rgba(20,40,30,0.45) 0%, transparent 50%);
-            min-height: 100vh;
-            color: #e0e0e0;
-            display: flex;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ═══════════════ SIDEBAR ═══════════════ */
-        .sidebar {
-            width: 300px;
-            min-width: 300px;
-            background: rgba(22,22,24,0.97);
-            border-right: 1px solid rgba(255,255,255,0.07);
-            padding: 28px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-            overflow-y: auto;
-        }
-
-        .sidebar-brand {
-            font-size: 15px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.85);
-            padding: 0 4px 4px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            padding-bottom: 16px;
-        }
-
-        .sidebar-brand span {
-            display: block;
-            font-size: 11px;
-            font-weight: 400;
-            color: rgba(255,255,255,0.3);
-            margin-top: 3px;
-            letter-spacing: 0.3px;
-        }
-
-        .sidebar-label {
-            font-size: 10.5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: rgba(255,255,255,0.25);
-            padding: 0 4px;
-            margin-bottom: 6px;
-        }
-
-        /* URL preview box */
-        .url-box {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 8px;
-            padding: 11px 12px;
-            font-family: 'Menlo','Monaco','Courier New',monospace;
-            font-size: 11px;
-            color: #6e7a8a;
-            word-break: break-all;
-            line-height: 1.6;
-        }
-
-        .url-box .hl-d { color: #5ac8fa; }
-        .url-box .hl-p { color: #30d158; }
-        .url-box .hl-k { color: #ff9f0a; }
-        .url-box .hl-v { color: #e0e0e0; }
-
-        .url-notice {
-            font-size: 10.5px;
-            color: rgba(255,159,10,0.7);
-            padding: 6px 4px 0;
-        }
-
-        /* Info tip */
-        .tip {
-            background: rgba(255,159,10,0.07);
-            border: 1px solid rgba(255,159,10,0.18);
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-size: 11.5px;
-            color: rgba(255,255,255,0.45);
-            line-height: 1.55;
-        }
-
-        .tip strong { color: #ff9f0a; }
-        .tip code {
-            background: rgba(0,0,0,0.3);
-            padding: 1px 5px;
-            border-radius: 4px;
-            font-family: 'Menlo','Monaco',monospace;
-            font-size: 10.5px;
-            color: #ff9f0a;
-        }
-
-        /* Sidebar history */
-        .sidebar-history { flex: 1; overflow-y: auto; min-height: 0; }
-
-        .sidebar-history table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11.5px;
-        }
-
-        .sidebar-history th {
-            color: rgba(255,255,255,0.25);
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 5px 4px 7px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            font-weight: 600;
-        }
-
-        .sidebar-history td {
-            padding: 6px 4px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.5);
-        }
-
-        .sidebar-history td.v { color: #ff9f0a; font-weight: 600; text-align: right; }
-
-        /* ═══════════════ MAIN ═══════════════ */
-        .main {
-            flex: 1;
-            padding: 36px 48px;
-            overflow-y: auto;
-            max-width: 720px;
-        }
-
-        /* Segmented tabs */
-        .seg {
-            display: inline-flex;
-            background: #2c2c2e;
-            border-radius: 9px;
-            padding: 3px;
-            margin-bottom: 28px;
-        }
-
-        .seg-btn {
-            padding: 7px 24px;
-            background: transparent;
-            border: none;
-            border-radius: 7px;
-            color: rgba(255,255,255,0.4);
-            font-size: 14px;
-            font-family: inherit;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.15s;
-        }
-
-        .seg-btn.active {
-            background: #48484a;
-            color: #fff;
-            font-weight: 600;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-        }
-
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
-        /* ═══════════════ CALCULATOR ═══════════════ */
-        .calc-display {
-            background: #000;
-            border-radius: 14px;
-            padding: 18px 22px 14px;
-            text-align: right;
-            margin-bottom: 12px;
-        }
-
-        .calc-expr {
-            font-size: 14px;
-            color: rgba(255,255,255,0.3);
-            min-height: 20px;
-            margin-bottom: 2px;
-        }
-
-        .calc-num {
-            font-size: 64px;
-            font-weight: 200;
-            color: #fff;
-            letter-spacing: -3px;
-            line-height: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .cb {
-            height: 72px;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
-            font-weight: 400;
-            font-family: inherit;
-            cursor: pointer;
-            transition: filter 0.1s;
-            outline: none;
-        }
-
-        .cb:active { filter: brightness(1.5); }
-        .cb.dark   { background: #333335; color: #fff; }
-        .cb.mid    { background: #9b9b9b; color: #1c1c1e; font-weight: 600; }
-        .cb.ora    { background: #ff9f0a; color: #fff; font-weight: 500; }
-        .cb.ora.active-op { background: #fff; color: #ff9f0a; }
-        .cb.zero   { grid-column: span 2; border-radius: 36px; text-align: left; padding-left: 28px; }
-
-        .calc-error {
-            color: #ff6b6b;
-            background: rgba(255,107,107,0.1);
-            border: 1px solid rgba(255,107,107,0.22);
-            border-radius: 8px;
-            padding: 11px 14px;
-            font-size: 13px;
-            margin-top: 12px;
-            display: none;
-        }
-
-        .calc-result {
-            background: rgba(255,159,10,0.08);
-            border: 1px solid rgba(255,159,10,0.22);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-top: 12px;
-            display: none;
-            animation: fadeIn 0.35s ease;
-        }
-
-        .calc-result .r-num {
-            font-size: 26px;
-            font-weight: 600;
-            color: #ff9f0a;
-            display: block;
-            margin-bottom: 3px;
-        }
-
-        .calc-result .r-detail {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
-        }
-
-        /* ═══════════════ CONVERTER ═══════════════ */
-        .card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 18px;
-        }
-
-        .card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.85);
-            margin-bottom: 16px;
-        }
-
-        /* Text input */
-        .inp {
-            width: 100%;
-            padding: 11px 14px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 9px;
-            color: #fff;
-            font-size: 16px;
-            font-family: inherit;
-            margin-bottom: 10px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .inp:focus {
-            border-color: rgba(255,159,10,0.55);
-            box-shadow: 0 0 0 3px rgba(255,159,10,0.1);
-        }
-
-        /* Select */
-        .sel {
-            width: 100%;
-            padding: 11px 14px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 9px;
-            color: #fff;
-            font-size: 14px;
-            font-family: inherit;
-            margin-bottom: 14px;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-        }
-
-        .sel option { background: #2c2c2e; }
-
-        /* Submit button */
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background: #ff9f0a;
-            color: #1c1c1e;
-            border: none;
-            border-radius: 9px;
-            font-size: 15px;
-            font-weight: 700;
-            font-family: inherit;
-            cursor: pointer;
-            transition: filter 0.15s;
-        }
-
-        .btn-submit:hover  { filter: brightness(1.08); }
-        .btn-submit:active { filter: brightness(0.92); }
-        .btn-submit:disabled { opacity: 0.45; cursor: default; }
-
-        /* Inline URL preview below form */
-        .url-inline {
-            background: rgba(0,0,0,0.35);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-family: 'Menlo','Monaco',monospace;
-            font-size: 11px;
-            color: #6e7a8a;
-            word-break: break-all;
-            line-height: 1.6;
-            margin-top: 12px;
-        }
-
-        .url-inline .hl { color: #ff9f0a; }
-        .url-inline .notice {
-            display: block;
-            margin-top: 5px;
-            font-size: 10px;
-            color: rgba(255,159,10,0.55);
-            font-family: inherit;
-        }
-
-        /* Conversion result */
-        .conv-result {
-            background: rgba(255,159,10,0.08);
-            border: 1px solid rgba(255,159,10,0.22);
-            border-radius: 10px;
-            padding: 14px 18px;
-            margin-top: 14px;
-            display: none;
-            animation: fadeIn 0.35s ease;
-        }
-
-        .conv-result.visible { display: block; }
-        .conv-result .r-num  { font-size: 28px; font-weight: 600; color: #ff9f0a; display: block; margin-bottom: 3px; }
-        .conv-result .r-desc { font-size: 13px; color: rgba(255,255,255,0.45); }
-
-        /* Conversion history table */
-        .conv-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12.5px;
-            margin-top: 6px;
-        }
-
-        .conv-table th {
-            color: rgba(255,255,255,0.25);
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 5px 8px 8px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .conv-table td {
-            padding: 8px 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.6);
-        }
-
-        .conv-table td.popis { color: rgba(255,255,255,0.82); }
-
-        /* ═══════════════ SHARED ═══════════════ */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .spinner {
-            display: inline-block;
-            width: 13px; height: 13px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle;
-            margin-right: 5px;
-        }
-
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    </style>
+    <title>IoT Admin Panel</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<!-- ═══════════ SIDEBAR ═══════════ -->
-<div class="sidebar">
-    <div class="sidebar-brand">
-        IoT Admin Panel
-        <span>Frontend A — Flask + SQLite + Azure</span>
-    </div>
+<div class="container">
+    <header>
+        <h1>IoT Admin Panel</h1>
+        <p>Frontend A — Správa zariadení a výpočtov</p>
+    </header>
 
-    <!-- GET Request URL preview -->
-    <div>
-        <div class="sidebar-label">GET Request URL</div>
-        <div class="url-box" id="urlPreview">
-            <span id="urlText">/vypocet?cislo1=_&amp;cislo2=_&amp;operacia=plus</span>
-        </div>
-        <!-- Explains that params appear in browser address bar -->
-        <div class="url-notice">
-            ↑ Táto URL sa zobrazí aj v adresnom riadku prehliadača
-        </div>
-    </div>
-
-    <!-- Educational tip -->
-    <div class="tip">
-        <strong>📖 Ako to funguje?</strong><br>
-        Formulár odosiela dáta cez <code>GET</code> request.
-        Parametre sú viditeľné v URL riadku prehliadača:
-        <code>/vypocet?cislo1=10&amp;cislo2=5&amp;operacia=plus</code>
-    </div>
-
-    <!-- Calculation history -->
-    <div class="sidebar-history">
-        <div class="sidebar-label">História výpočtov</div>
-        <div id="historiaObsah">
-            <p style="color:rgba(255,255,255,0.2);font-size:12px;padding:4px;">Načítavam...</p>
-        </div>
-    </div>
-</div>
-
-<!-- ═══════════ MAIN ═══════════ -->
-<div class="main">
-
-    <!-- Segmented tab control -->
-    <div class="seg">
-        <button class="seg-btn active" data-tab="kalkulacka" onclick="activateTab('kalkulacka')">
-            🧮 Kalkulačka
-        </button>
-        <button class="seg-btn" data-tab="prevodnik" onclick="activateTab('prevodnik')">
-            🔄 Prevodník
-        </button>
-    </div>
-
-    <!-- ════════════════════════════
-         TAB 1: CALCULATOR
-         ════════════════════════════ -->
-    <div id="panel-kalkulacka" class="tab-panel active">
-
-        <!-- Display -->
-        <div class="calc-display">
-            <div class="calc-expr" id="calcExpr"></div>
-            <div class="calc-num" id="calcDisplay">0</div>
-        </div>
-
-        <!-- Hidden inputs fed by calcState -->
-        <input type="hidden" id="cislo1" value="">
-        <input type="hidden" id="cislo2" value="">
-        <input type="hidden" id="operacia" value="plus">
-
-        <!-- Button grid — macOS Calculator layout -->
-        <div class="calc-grid">
-            <button class="cb mid" onclick="calcPress('AC')">AC</button>
-            <button class="cb mid" onclick="calcPress('+/-')">+/-</button>
-            <button class="cb mid" onclick="calcPress('%')">%</button>
-            <button class="cb ora" id="btn-deleno" onclick="calcPress('deleno')">÷</button>
-
-            <button class="cb dark" onclick="calcPress('7')">7</button>
-            <button class="cb dark" onclick="calcPress('8')">8</button>
-            <button class="cb dark" onclick="calcPress('9')">9</button>
-            <button class="cb ora" id="btn-krat" onclick="calcPress('krat')">×</button>
-
-            <button class="cb dark" onclick="calcPress('4')">4</button>
-            <button class="cb dark" onclick="calcPress('5')">5</button>
-            <button class="cb dark" onclick="calcPress('6')">6</button>
-            <button class="cb ora" id="btn-minus" onclick="calcPress('minus')">−</button>
-
-            <button class="cb dark" onclick="calcPress('1')">1</button>
-            <button class="cb dark" onclick="calcPress('2')">2</button>
-            <button class="cb dark" onclick="calcPress('3')">3</button>
-            <button class="cb ora" id="btn-plus" onclick="calcPress('plus')">+</button>
-
-            <button class="cb dark zero" onclick="calcPress('0')">0</button>
-            <button class="cb dark" onclick="calcPress('.')">.</button>
-            <button class="cb ora" onclick="calcPress('=')">=</button>
-        </div>
-
-        <div class="calc-error" id="chybaMsg"></div>
-
-        <div class="calc-result" id="calcResult">
-            <span class="r-num" id="calcResNum"></span>
-            <span class="r-detail" id="calcResDetail"></span>
-        </div>
-
-    </div>
-
-    <!-- ════════════════════════════
-         TAB 2: UNIT CONVERTER
-         Zadanie na doma:
-         ✅ Text input   (hodnotaVstup)
-         ✅ Select       (typVstup)
-         ✅ Submit button
-         ✅ GET params v URL riadku
-         ✅ Komentovaný kód
-         ════════════════════════════ -->
-    <div id="panel-prevodnik" class="tab-panel">
-
+    <div class="dashboard-grid">
+        <!-- CALCULATOR CARD -->
         <div class="card">
-            <h3>Prevodník jednotiek</h3>
+            <div class="card-title">🧮 Kalkulačka</div>
+            <div class="calc-display">
+                <div class="calc-expr" id="calc-expr"></div>
+                <div class="calc-val" id="calc-display">0</div>
+            </div>
+            <div class="calc-btns">
+                <button class="cb cb-mid" onclick="calcPress('AC')">AC</button>
+                <button class="cb cb-mid" onclick="calcPress('+/-')">+/-</button>
+                <button class="cb cb-mid" onclick="calcPress('%')">%</button>
+                <button class="cb cb-accent" onclick="calcPress('deleno')">÷</button>
 
-            <form id="prevodnikForm" onsubmit="return odosliPrevod(event)">
+                <button class="cb cb-dark" onclick="calcPress('7')">7</button>
+                <button class="cb cb-dark" onclick="calcPress('8')">8</button>
+                <button class="cb cb-dark" onclick="calcPress('9')">9</button>
+                <button class="cb cb-accent" onclick="calcPress('krat')">×</button>
 
-                <!--
-                    TEXT INPUT: hodnota na prevod
-                    Povinný parameter — zobrazí sa v URL: ?hodnota=42
-                -->
-                <input type="number" id="hodnotaVstup" class="inp"
-                       placeholder="Zadajte hodnotu (napr. 42)"
-                       step="any" required
-                       oninput="aktualizujPrevodnikUrl()">
+                <button class="cb cb-dark" onclick="calcPress('4')">4</button>
+                <button class="cb cb-dark" onclick="calcPress('5')">5</button>
+                <button class="cb cb-dark" onclick="calcPress('6')">6</button>
+                <button class="cb cb-accent" onclick="calcPress('minus')">−</button>
 
-                <!--
-                    SELECT (Check Button):
-                    Výber typu prevodu — zobrazí sa v URL: &typ=km_na_mile
-                    Všetky 4 možnosti sú podporované backendom.
-                -->
-                <select id="typVstup" class="sel" onchange="aktualizujPrevodnikUrl()">
-                    <option value="km_na_mile">km → míle</option>
-                    <option value="c_na_f">°C → °F (Fahrenheit)</option>
-                    <option value="kg_na_lbs">kg → libry (lbs)</option>
-                    <option value="m_na_ft">m → stopy (ft)</option>
-                </select>
+                <button class="cb cb-dark" onclick="calcPress('1')">1</button>
+                <button class="cb cb-dark" onclick="calcPress('2')">2</button>
+                <button class="cb cb-dark" onclick="calcPress('3')">3</button>
+                <button class="cb cb-accent" onclick="calcPress('plus')">+</button>
 
-                <!-- SUBMIT BUTTON: spustí GET request -->
-                <button type="submit" class="btn-submit" id="convBtn">
-                    Previesť
-                </button>
+                <button class="cb cb-dark" style="grid-column: span 2;" onclick="calcPress('0')">0</button>
+                <button class="cb cb-dark" onclick="calcPress('.')">.</button>
+                <button class="cb cb-accent" onclick="calcPress('=')">=</button>
+            </div>
+            <div id="calc-status" style="margin-top: 1rem; font-size: 0.875rem; color: var(--accent-primary);"></div>
+        </div>
 
+        <!-- CONVERTER CARD -->
+        <div class="card">
+            <div class="card-title">🔄 Prevodník jednotiek</div>
+            <form id="form-prevod" onsubmit="return handlePrevod(event)">
+                <div class="form-group">
+                    <label>Hodnota</label>
+                    <input type="number" id="prevod-hodnota" class="input" step="any" required placeholder="Zadajte číslo">
+                </div>
+                <div class="form-group">
+                    <label>Typ prevodu</label>
+                    <select id="prevod-typ" class="select">
+                        <optgroup label="IoT Senzory">
+                            <option value="c_to_f">°C → °F (Teplota)</option>
+                            <option value="hpa_to_mmhg">hPa → mmHg (Tlak)</option>
+                            <option value="ms_to_kmh">m/s → km/h (Rýchlosť)</option>
+                        </optgroup>
+                        <optgroup label="Číselné Sústavy">
+                            <option value="dec_to_bin">DEC → BIN</option>
+                            <option value="dec_to_hex">DEC → HEX</option>
+                            <option value="bin_to_dec">BIN → DEC</option>
+                            <option value="hex_to_dec">HEX → DEC</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Previesť a uložiť</button>
             </form>
-
-            <!--
-                URL PREVIEW + BROWSER ADDRESS BAR NOTICE
-                Zobrazuje presne tú URL, ktorá sa pošle na backend.
-                Pri odoslaní sa táto URL objaví aj v adresnom riadku prehliadača
-                vďaka history.pushState().
-            -->
-            <div class="url-inline">
-                <strong style="color:rgba(255,255,255,0.25);">GET URL:</strong><br>
-                <span id="convUrlText">/prevodnik?hodnota=_&amp;typ=km_na_mile</span>
-                <span class="notice">↑ Po kliknutí "Previesť" sa táto URL zobrazí v adresnom riadku prehliadača</span>
-            </div>
-
-            <!-- Výsledok prevodu -->
-            <div class="conv-result" id="convResult">
-                <span class="r-num" id="convResNum"></span>
-                <span class="r-desc" id="convResDesc"></span>
+            <div id="prevod-result" style="margin-top: 1.5rem; display: none;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary);" id="prevod-val"></div>
+                <div style="font-size: 0.875rem; color: var(--text-muted);" id="prevod-desc"></div>
             </div>
         </div>
-
-        <!-- História prevodov -->
-        <div class="card">
-            <h3>História prevodov</h3>
-            <div id="convHistoriaObsah">
-                <p style="color:rgba(255,255,255,0.2);font-size:12px;">Načítavam...</p>
-            </div>
-        </div>
-
     </div>
 
+    <!-- HISTORY SECTION -->
+    <div class="card" style="margin-top: 2rem;">
+        <div class="card-title">📜 Posledné aktivity</div>
+        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div>
+                <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Výpočty</h4>
+                <div class="table-container" id="historia-vypoctov"></div>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Prevody</h4>
+                <div class="table-container" id="historia-prevodov"></div>
+            </div>
+        </div>
+    </div>
 </div>
-<!-- end main -->
 
-<script>
-    // ── KONFIGURÁCIA ─────────────────────────────────────────────────
-    const BACKEND_URL = window.location.origin;
+<script src="/static/js/admin.js"></script>
 
-    // ══════════════════════════════════════════════════════════════════
-    // TAB SWITCHING
-    // ══════════════════════════════════════════════════════════════════
-    function activateTab(name) {
-        document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelector(`.seg-btn[data-tab="${name}"]`).classList.add('active');
-        document.getElementById(`panel-${name}`).classList.add('active');
-        if (name === 'prevodnik') aktualizujPrevodnikUrl();
-        else aktualizujUrlPreview();
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // CALCULATOR STATE
-    // ══════════════════════════════════════════════════════════════════
-    const calcState = {
-        buffer: '', cislo1: '', operacia: '',
-        phase: 'input1', justResult: false
-    };
-
-    const opSymbols = { plus: '+', minus: '−', krat: '×', deleno: '÷' };
-
-    function updateDisplay(val) {
-        let d = String(val);
-        if (d.replace('-','').replace('.','').length > 10)
-            d = parseFloat(val).toPrecision(8);
-        document.getElementById('calcDisplay').textContent = d || '0';
-    }
-
-    function updateExpr() {
-        const el = document.getElementById('calcExpr');
-        if (calcState.phase === 'input2' && calcState.cislo1 && calcState.operacia)
-            el.textContent = `${calcState.cislo1} ${opSymbols[calcState.operacia]}`;
-        else
-            el.textContent = '';
-    }
-
-    function highlightOp(op) {
-        ['plus','minus','krat','deleno'].forEach(o => {
-            const b = document.getElementById('btn-' + o);
-            if (b) b.classList.toggle('active-op', o === op);
-        });
-    }
-
-    function calcPress(val) {
-        document.getElementById('chybaMsg').style.display = 'none';
-
-        if ('0123456789'.includes(val)) {
-            if (calcState.justResult) {
-                calcState.buffer = val === '0' ? '0' : val;
-                calcState.cislo1 = ''; calcState.operacia = '';
-                calcState.phase = 'input1'; calcState.justResult = false;
-                highlightOp(null);
-            } else {
-                if (calcState.buffer === '0' && val !== '.') calcState.buffer = val;
-                else calcState.buffer += val;
-            }
-            updateDisplay(calcState.buffer);
-            updateExpr();
-            aktualizujUrlPreview();
-            return;
-        }
-
-        if (val === '.') {
-            if (!calcState.buffer.includes('.'))
-                calcState.buffer = (calcState.buffer || '0') + '.';
-            updateDisplay(calcState.buffer);
-            return;
-        }
-
-        if (val === 'AC') {
-            calcState.buffer = '0'; calcState.cislo1 = '';
-            calcState.operacia = ''; calcState.phase = 'input1';
-            calcState.justResult = false;
-            highlightOp(null);
-            updateDisplay('0');
-            document.getElementById('calcExpr').textContent = '';
-            document.getElementById('calcResult').style.display = 'none';
-            aktualizujUrlPreview();
-            return;
-        }
-
-        if (val === '+/-') {
-            if (calcState.buffer && calcState.buffer !== '0') {
-                calcState.buffer = calcState.buffer.startsWith('-')
-                    ? calcState.buffer.slice(1)
-                    : '-' + calcState.buffer;
-                updateDisplay(calcState.buffer);
-            }
-            return;
-        }
-
-        if (val === '%') {
-            if (calcState.buffer) {
-                calcState.buffer = String(parseFloat(calcState.buffer) / 100);
-                updateDisplay(calcState.buffer);
-            }
-            return;
-        }
-
-        if (['plus','minus','krat','deleno'].includes(val)) {
-            if (calcState.buffer !== '') calcState.cislo1 = calcState.buffer;
-            calcState.buffer = '';
-            calcState.operacia = val;
-            calcState.phase = 'input2';
-            calcState.justResult = false;
-            highlightOp(val);
-            updateExpr();
-            document.getElementById('operacia').value = val;
-            document.getElementById('cislo1').value = calcState.cislo1;
-            aktualizujUrlPreview();
-            return;
-        }
-
-        if (val === '=') {
-            if (!calcState.cislo1 || !calcState.operacia || !calcState.buffer) return;
-            document.getElementById('cislo1').value = calcState.cislo1;
-            document.getElementById('cislo2').value = calcState.buffer;
-            document.getElementById('operacia').value = calcState.operacia;
-            document.getElementById('calcExpr').textContent =
-                `${calcState.cislo1} ${opSymbols[calcState.operacia]} ${calcState.buffer} =`;
-            highlightOp(null);
-            aktualizujUrlPreview();
-            odosliFormular();
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // URL PREVIEW (sidebar) — Calculator
-    // ══════════════════════════════════════════════════════════════════
-    function aktualizujUrlPreview() {
-        const c1 = document.getElementById('cislo1').value || calcState.buffer || '_';
-        const c2 = document.getElementById('cislo2').value || '_';
-        const op = document.getElementById('operacia').value || 'plus';
-
-        document.getElementById('urlText').innerHTML =
-            `<span class="hl-d">${BACKEND_URL}</span>` +
-            `<span class="hl-p">/vypocet</span>?` +
-            `<span class="hl-k">cislo1</span>=<span class="hl-v">${c1}</span>&amp;` +
-            `<span class="hl-k">cislo2</span>=<span class="hl-v">${c2}</span>&amp;` +
-            `<span class="hl-k">operacia</span>=<span class="hl-v">${op}</span>`;
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // SUBMIT — Calculator
-    // ══════════════════════════════════════════════════════════════════
-    async function odosliFormular() {
-        const cislo1 = document.getElementById('cislo1').value;
-        const cislo2 = document.getElementById('cislo2').value;
-        const operacia = document.getElementById('operacia').value;
-        if (!cislo1 || !cislo2) return;
-
-        document.getElementById('chybaMsg').style.display = 'none';
-        document.getElementById('calcResult').style.display = 'none';
-
-        const url = `${BACKEND_URL}/vypocet?cislo1=${cislo1}&cislo2=${cislo2}&operacia=${operacia}`;
-        console.log('📤 GET request:', url);
-
-        // ── KĽÚČOVÉ: Zobrazí GET parametre v adresnom riadku prehliadača ──
-        // history.pushState() zmení URL v prehliadači BEZ obnovy stránky.
-        // Toto je presne to, čo by sa stalo pri classickom odoslaní formulára.
-        history.pushState(null, '', `/vypocet?cislo1=${cislo1}&cislo2=${cislo2}&operacia=${operacia}`);
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            console.log('📥 Odpoveď:', data);
-
-            if (data.chyba) {
-                zobrazChybu(data.chyba);
-            } else {
-                // Show result on display
-                updateDisplay(String(data.vysledok));
-                calcState.buffer = String(data.vysledok);
-                calcState.phase = 'result';
-                calcState.justResult = true;
-
-                const sym = opSymbols[data.operacia] || '?';
-                const box = document.getElementById('calcResult');
-                document.getElementById('calcResNum').textContent = data.vysledok;
-                document.getElementById('calcResDetail').textContent =
-                    `${data.cislo1} ${sym} ${data.cislo2}  ·  ID #${data.id}  ·  ${data.cas}`;
-                box.style.display = 'block';
-                nacitajHistoriu();
-            }
-        } catch (err) {
-            console.error('❌', err);
-            zobrazChybu('Nepodarilo sa spojiť so serverom.');
-        }
-    }
-
-    function zobrazChybu(text) {
-        const el = document.getElementById('chybaMsg');
-        el.textContent = '⚠️ ' + text;
-        el.style.display = 'block';
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // HISTORY — renders into sidebar
-    // ══════════════════════════════════════════════════════════════════
-    async function nacitajHistoriu() {
-        try {
-            const r = await fetch(`${BACKEND_URL}/api/historia`);
-            const data = await r.json();
-            const el = document.getElementById('historiaObsah');
-
-            if (!data.length) {
-                el.innerHTML = '<p style="color:rgba(255,255,255,0.2);font-size:12px;padding:4px;">Zatiaľ žiadne výpočty.</p>';
-                return;
-            }
-
-            const sym = { plus:'+', minus:'−', krat:'×', deleno:'÷' };
-            let html = '<table style="width:100%;border-collapse:collapse;">';
-            html += '<tr><th style="color:rgba(255,255,255,0.22);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:5px 4px 7px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left;">Výpočet</th>';
-            html += '<th style="color:rgba(255,255,255,0.22);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:5px 4px 7px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;">=</th></tr>';
-            data.slice(0, 20).forEach(it => {
-                html += `<tr>
-                    <td style="padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:11px;">${it.cislo1} ${sym[it.operacia]||'?'} ${it.cislo2}</td>
-                    <td style="padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.04);color:#ff9f0a;font-weight:600;text-align:right;font-size:11px;">${it.vysledok}</td>
-                </tr>`;
-            });
-            html += '</table>';
-            el.innerHTML = html;
-        } catch (e) {
-            document.getElementById('historiaObsah').innerHTML =
-                '<p style="color:rgba(255,107,107,0.5);font-size:12px;">Chyba načítania.</p>';
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // CONVERTER — URL PREVIEW
-    // ══════════════════════════════════════════════════════════════════
-    function aktualizujPrevodnikUrl() {
-        const val = document.getElementById('hodnotaVstup').value || '_';
-        const typ = document.getElementById('typVstup').value;
-
-        // Update inline preview
-        document.getElementById('convUrlText').innerHTML =
-            `<span class="hl">${BACKEND_URL}</span>/prevodnik?hodnota=${val}&amp;typ=${typ}`;
-
-        // Also update sidebar URL preview
-        document.getElementById('urlText').innerHTML =
-            `<span class="hl-d">${BACKEND_URL}</span>` +
-            `<span class="hl-p">/prevodnik</span>?` +
-            `<span class="hl-k">hodnota</span>=<span class="hl-v">${val}</span>&amp;` +
-            `<span class="hl-k">typ</span>=<span class="hl-v">${typ}</span>`;
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // CONVERTER — SUBMIT
-    // ══════════════════════════════════════════════════════════════════
-    async function odosliPrevod(event) {
-        event.preventDefault();
-        const hodnota = document.getElementById('hodnotaVstup').value;
-        const typ = document.getElementById('typVstup').value;
-        if (!hodnota) return false;
-
-        const btn = document.getElementById('convBtn');
-        btn.innerHTML = '<span class="spinner"></span> Prevádzam...';
-        btn.disabled = true;
-
-        const url = `${BACKEND_URL}/prevodnik?hodnota=${hodnota}&typ=${typ}`;
-        console.log('📤 GET request (prevodník):', url);
-
-        // ── KĽÚČOVÉ: Zobrazí GET parametre v adresnom riadku prehliadača ──
-        history.pushState(null, '', `/prevodnik?hodnota=${hodnota}&typ=${typ}`);
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            console.log('📥 Odpoveď:', data);
-
-            if (data.chyba) {
-                alert('⚠️ ' + data.chyba);
-            } else {
-                document.getElementById('convResNum').textContent = data.vysledok;
-                document.getElementById('convResDesc').textContent =
-                    data.popis + '  ·  ID #' + data.id + '  ·  ' + data.cas;
-                document.getElementById('convResult').classList.add('visible');
-                nacitajPrevody();
-            }
-        } catch (err) {
-            console.error('❌', err);
-            alert('Nepodarilo sa spojiť so serverom.');
-        } finally {
-            btn.innerHTML = 'Previesť';
-            btn.disabled = false;
-        }
-        return false;
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // CONVERTER — HISTORY
-    // ══════════════════════════════════════════════════════════════════
-    async function nacitajPrevody() {
-        try {
-            const r = await fetch(`${BACKEND_URL}/api/prevody`);
-            const data = await r.json();
-            const el = document.getElementById('convHistoriaObsah');
-
-            if (!data.length) {
-                el.innerHTML = '<p style="color:rgba(255,255,255,0.2);font-size:12px;">Zatiaľ žiadne prevody.</p>';
-                return;
-            }
-
-            let html = '<table class="conv-table"><tr><th>Prevod</th><th>Čas</th></tr>';
-            data.slice(0, 25).forEach(it => {
-                html += `<tr>
-                    <td class="popis">${it.popis}</td>
-                    <td style="color:rgba(255,255,255,0.28);font-size:10.5px;white-space:nowrap;">${it.cas}</td>
-                </tr>`;
-            });
-            html += '</table>';
-            el.innerHTML = html;
-        } catch (e) {
-            document.getElementById('convHistoriaObsah').innerHTML =
-                '<p style="color:rgba(255,107,107,0.5);font-size:12px;">Chyba načítania.</p>';
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // INIT
-    // ══════════════════════════════════════════════════════════════════
-    aktualizujUrlPreview();
-    aktualizujPrevodnikUrl();
-    nacitajHistoriu();
-    nacitajPrevody();
-</script>
 </body>
 </html>
