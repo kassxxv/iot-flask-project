@@ -1,0 +1,105 @@
+/* ============================================================
+   admin.css — Calculator page specific styles
+   ============================================================ */
+
+/* ── Calculator display ── */
+.calc-display {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 20px 16px 12px;
+  text-align: right;
+  margin-bottom: 16px;
+  border: 1.5px solid var(--border);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.calc-expr {
+  font-size: .8rem;
+  color: var(--text-muted);
+  min-height: 18px;
+  margin-bottom: 4px;
+}
+.calc-val {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.5px;
+  word-break: break-all;
+}
+
+/* ── Calc buttons grid ── */
+.calc-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.cb {
+  padding: 16px 8px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .12s, transform .1s;
+}
+.cb:active { transform: scale(.93); }
+.cb.span-2 { grid-column: span 2; }
+
+.cb-light {
+  background: var(--bg);
+  color: var(--text-label);
+  border: 1px solid var(--border);
+}
+.cb-light:hover { background: var(--border); }
+
+.cb-accent {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.cb-accent:hover { background: #f8bbd0; }
+
+.cb-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.cb-primary:hover { background: var(--accent-dark); }
+
+/* ── Status line ── */
+.calc-status {
+  margin-top: 12px;
+  font-size: .8rem;
+  color: var(--accent);
+  min-height: 20px;
+  text-align: center;
+}
+
+/* ── Result panel (right card) ── */
+.result-big {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -1px;
+  text-align: center;
+  padding: 20px 0;
+}
+.result-label {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: .85rem;
+}
+
+/* ── History mini list ── */
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .85rem;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item .expr { color: var(--text-label); }
+.history-item .res  { font-weight: 700; color: var(--text); }

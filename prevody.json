@@ -1,0 +1,50 @@
+[
+  {
+    "vstup": "22",
+    "typ": "c_to_f",
+    "vysledok": 71.6,
+    "popis": "22.0 °C = 71.60 °F",
+    "cas": "2026-04-16 23:42:06",
+    "id": 1
+  },
+  {
+    "vstup": "1013",
+    "typ": "hpa_to_mmhg",
+    "vysledok": 759.81,
+    "popis": "1013.0 hPa = 759.81 mmHg",
+    "cas": "2026-04-16 23:42:06",
+    "id": 2
+  },
+  {
+    "vstup": "10",
+    "typ": "ms_to_kmh",
+    "vysledok": 36.0,
+    "popis": "10.0 m/s = 36.00 km/h",
+    "cas": "2026-04-16 23:42:06",
+    "id": 3
+  },
+  {
+    "vstup": "8787",
+    "typ": "hpa_to_mmhg",
+    "vysledok": 6590.78,
+    "popis": "8787.0 hPa = 6590.78 mmHg",
+    "cas": "2026-04-16 23:43:41",
+    "id": 4
+  },
+  {
+    "vstup": "798787",
+    "typ": "hpa_to_mmhg",
+    "vysledok": 599138.18,
+    "popis": "798787.0 hPa = 599138.18 mmHg",
+    "cas": "2026-04-16 23:43:45",
+    "id": 5
+  },
+  {
+    "vstup": "86878",
+    "typ": "hpa_to_mmhg",
+    "vysledok": 65163.71,
+    "popis": "86878.0 hPa = 65163.71 mmHg",
+    "cas": "2026-04-16 23:52:28",
+    "id": 6
+  }
+]

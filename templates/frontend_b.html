@@ -3,66 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — IoT Client</title>
+  <title>Dashboard — Panel by Fylyp</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
 </head>
 <body>
+<canvas id="sakura-canvas"></canvas>
 <div class="app-shell">
 
-  <!-- ── Sidebar ── -->
+  <!-- Sidebar -->
   <aside class="sidebar">
     <a href="/" class="sidebar-logo">
-      <div class="sidebar-logo-icon">📡</div>
-      <span class="sidebar-logo-text">IoT Panel</span>
+      <div class="sidebar-logo-icon">F</div>
+      <span class="sidebar-logo-text">Panel by Fylyp</span>
     </a>
     <nav class="sidebar-nav">
-      <span class="nav-label">Nástroje</span>
-      <a href="/"       class="nav-link"><span class="icon">🧮</span> Kalkulačka</a>
-      <a href="/prevod" class="nav-link"><span class="icon">🔄</span> Prevodník</a>
+      <span class="nav-label">Nastroje</span>
+      <a href="/"       class="nav-link">Kalkulacka</a>
+      <a href="/prevod" class="nav-link">Prevodnik</a>
       <span class="nav-label">Monitoring</span>
-      <a href="/klient" class="nav-link active"><span class="icon">📊</span> Dashboard</a>
+      <a href="/klient" class="nav-link active">Dashboard</a>
     </nav>
   </aside>
 
-  <!-- ── Main ── -->
+  <!-- Main -->
   <main class="main">
     <div class="page-header">
       <h1>Dashboard</h1>
-      <p>Monitoring v reálnom čase — obnovuje sa každých 5 sekúnd.</p>
+      <p>Monitoring v realnom case — obnovuje sa kazdych 5 sekund.</p>
     </div>
 
     <!-- Stat cards -->
     <div class="grid-3" style="margin-bottom: 20px;">
       <div class="stat-card accent">
-        <span class="label">Posledný výsledok</span>
+        <span class="label">Posledny vysledok</span>
         <span class="value" id="last-result">—</span>
-        <span class="sub" id="last-expr">Čakám na dáta…</span>
+        <span class="sub" id="last-expr">Cakam na data...</span>
       </div>
       <div class="stat-card">
-        <span class="label">Celkom výpočtov</span>
+        <span class="label">Celkom vypoctov</span>
         <span class="value" id="stat-calc">—</span>
-        <span class="sub">uložených v databáze</span>
+        <span class="sub">ulozenych v databaze</span>
       </div>
       <div class="stat-card">
         <span class="label">Celkom prevodov</span>
         <span class="value" id="stat-prevod">—</span>
-        <span class="sub">uložených v súbore</span>
+        <span class="sub">ulozenych v subore</span>
       </div>
     </div>
 
     <!-- Status card -->
     <div class="card" style="margin-bottom: 20px;">
-      <div class="card-title">📡 Stav systému</div>
+      <div class="card-title">Stav systemu</div>
       <div class="status-row">
         <span>Backend</span>
         <span>
           <span class="dot green" id="status-dot"></span>
-          <span class="badge badge-green" id="status-text">Pripájanie…</span>
+          <span class="badge badge-green" id="status-text">Pripajanie...</span>
         </span>
       </div>
       <div class="status-row">
-        <span>Posledný refresh</span>
+        <span>Posledny refresh</span>
         <span class="refresh-ts" id="last-refresh">—</span>
       </div>
     </div>
@@ -71,38 +72,38 @@
     <div class="grid-2">
       <!-- Calc history -->
       <div class="card">
-        <div class="card-title">📜 História výpočtov</div>
+        <div class="card-title">Historia vypoctov</div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Výraz</th>
-                <th>Výsledok</th>
-                <th>Čas</th>
+                <th>Vyraz</th>
+                <th>Vysledok</th>
+                <th>Cas</th>
               </tr>
             </thead>
             <tbody id="tbody-vypocty"></tbody>
           </table>
-          <div class="empty" id="empty-vypocty" style="display:none;">Žiadne záznamy</div>
+          <div class="empty" id="empty-vypocty" style="display:none;">Ziadne zaznamy</div>
         </div>
       </div>
 
       <!-- Conversion history -->
       <div class="card">
-        <div class="card-title">🔄 História prevodov</div>
+        <div class="card-title">Historia prevodov</div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Vstup</th>
                 <th>Typ</th>
-                <th>Výsledok</th>
-                <th>Čas</th>
+                <th>Vysledok</th>
+                <th>Cas</th>
               </tr>
             </thead>
             <tbody id="tbody-prevody"></tbody>
           </table>
-          <div class="empty" id="empty-prevody" style="display:none;">Žiadne záznamy</div>
+          <div class="empty" id="empty-prevody" style="display:none;">Ziadne zaznamy</div>
         </div>
       </div>
     </div>
@@ -110,5 +111,6 @@
   </main>
 </div>
 <script src="{{ url_for('static', filename='js/client.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sakura.js') }}"></script>
 </body>
 </html>

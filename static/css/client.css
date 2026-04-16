@@ -1,0 +1,67 @@
+/* ============================================================
+   client.css — Client Dashboard page specific styles
+   ============================================================ */
+
+/* ── Stat card ── */
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stat-card .label {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-muted);
+}
+.stat-card .value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.5px;
+}
+.stat-card .sub {
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+.stat-card.accent .value { color: var(--accent); }
+
+/* ── Status indicator ── */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: .875rem;
+  color: var(--text-label);
+  border-bottom: 1px solid var(--border);
+}
+.status-row:last-child { border-bottom: none; }
+
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.dot.green { background: #43a047; box-shadow: 0 0 0 3px #c8e6c9; }
+.dot.red   { background: #e53935; box-shadow: 0 0 0 3px #ffcdd2; }
+
+/* ── Refresh timestamp ── */
+.refresh-ts {
+  font-family: monospace;
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+
+/* ── Loading pulse ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+.loading { animation: pulse 1.4s ease-in-out infinite; }
