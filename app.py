@@ -1,9 +1,3 @@
-"""
-=============================================================================
-IoT Backend Refactored - Flask (with Number Systems)
-=============================================================================
-"""
-
 import os
 import json
 import sqlite3
@@ -156,6 +150,44 @@ def api_prevod():
 @app.route("/api/historia-prevodov")
 def api_historia_prevodov():
     return jsonify(load_conversions())
+
+# --- NUMBER SYSTEM ALL-IN-ONE CONVERTER ---
+@app.route("/api/sys-konverzia")
+def api_sys_konverzia():
+    hodnota_raw = request.args.get("hodnota", "").strip()
+    zaklad_raw  = request.args.get("zaklad", "10")
+
+    if not hodnota_raw:
+        return jsonify({"chyba": "Zadajte hodnotu!"}), 400
+
+    try:
+        zaklad = int(zaklad_raw)
+        if zaklad not in (2, 8, 10, 16):
+            return jsonify({"chyba": "Nepodporovana zakl. sustava!"}), 400
+
+        # Parse input value in the given base
+        if zaklad == 16:
+            n = int(hodnota_raw, 16)
+        elif zaklad == 8:
+            n = int(hodnota_raw, 8)
+        elif zaklad == 2:
+            n = int(hodnota_raw, 2)
+        else:
+            n = int(hodnota_raw)
+
+        if n < 0:
+            return jsonify({"chyba": "Iba nezaporne cisla!"}), 400
+
+        result = {
+            "dec": str(n),
+            "bin": bin(n)[2:],
+            "oct": oct(n)[2:],
+            "hex": hex(n)[2:].upper(),
+        }
+        return jsonify(result)
+
+    except ValueError:
+        return jsonify({"chyba": "Neplatny format pre zvolenu sustavu!"}), 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

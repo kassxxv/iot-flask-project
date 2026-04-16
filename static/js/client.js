@@ -1,7 +1,3 @@
-/* ============================================================
-   client.js — IoT Client Dashboard logic
-   ============================================================ */
-
 const OP_SYMBOLS = { plus: '+', minus: '−', krat: '×', deleno: '÷' };
 const REFRESH_INTERVAL = 5000;
 

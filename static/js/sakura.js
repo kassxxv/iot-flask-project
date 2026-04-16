@@ -1,6 +1,3 @@
-/* ============================================================
-   sakura.js — Animated falling sakura petals (canvas)
-   ============================================================ */
 (function () {
   const canvas = document.getElementById('sakura-canvas');
   if (!canvas) return;

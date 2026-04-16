@@ -1,106 +1,175 @@
-/* ============================================================
-   prevod.css — Unit Converter page specific styles
-   ============================================================ */
-
-/* ── Pill toggle group (conversion type selector) ── */
+/* ── Pill toggle ── */
 .pill-group {
   display: flex;
   background: var(--bg);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-pill);
-  padding: 4px;
+  padding: 3px;
   gap: 2px;
 }
 .pill-opt {
   flex: 1;
-  padding: 8px 10px;
+  padding: 7px 8px;
   border-radius: var(--radius-pill);
   border: none;
   font-family: var(--font);
-  font-size: .82rem;
+  font-size: .78rem;
   font-weight: 600;
   cursor: pointer;
   color: var(--text-label);
   background: transparent;
-  transition: background .15s, color .15s;
+  transition: background .13s, color .13s, box-shadow .13s;
   text-align: center;
   white-space: nowrap;
 }
-.pill-opt.selected,
-.pill-opt:hover {
-  background: var(--bg-card);
-  color: var(--accent);
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
-}
+.pill-opt:hover { color: var(--text); }
 .pill-opt.selected {
+  background: #fff;
   color: var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
   font-weight: 700;
 }
 
-/* ── Big input ── */
+/* ── Big number input ── */
 .input-big {
   width: 100%;
-  padding: 16px 18px;
+  padding: 14px 16px;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  font-weight: 600;
   color: var(--text);
   background: var(--bg);
   outline: none;
-  transition: border-color .15s;
+  transition: border-color .15s, background .15s;
   text-align: right;
+  letter-spacing: .02em;
 }
 .input-big:focus { border-color: var(--accent); background: #fff; }
 
-/* ── Unit label ── */
 .unit-label {
-  font-size: .85rem;
+  font-size: .8rem;
   font-weight: 600;
   color: var(--text-muted);
-  margin-top: 6px;
+  margin-top: 5px;
   text-align: right;
 }
 
-/* ── Result card ── */
+/* ── IoT result card ── */
 .result-card {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   border-radius: var(--radius);
-  padding: 28px 24px;
+  padding: 24px;
   text-align: center;
   color: #fff;
   display: none;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 .result-card.show { display: block; }
 .result-card .res-label {
-  font-size: .8rem;
-  font-weight: 600;
+  font-size: .72rem;
+  font-weight: 700;
   opacity: .8;
   text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-bottom: 8px;
-}
-.result-card .res-value {
-  font-size: 2.8rem;
-  font-weight: 800;
-  letter-spacing: -1px;
+  letter-spacing: .1em;
   margin-bottom: 6px;
 }
-.result-card .res-desc {
-  font-size: .9rem;
-  opacity: .85;
+.result-card .res-value {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  font-family: var(--mono);
+  margin-bottom: 4px;
 }
+.result-card .res-desc { font-size: .85rem; opacity: .85; }
 
 /* ── Error ── */
 .error-msg {
-  color: #c62828;
-  background: #ffebee;
+  color: #b91c1c;
+  background: #fee2e2;
   border-radius: var(--radius-sm);
   padding: 10px 14px;
-  font-size: .85rem;
-  margin-top: 12px;
+  font-size: .84rem;
+  margin-top: 10px;
   display: none;
 }
 .error-msg.show { display: block; }
+
+/* ── Number system grid ── */
+.sys-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+.sys-box {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+}
+.sys-box.highlight {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.sys-box .sys-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.sys-box.highlight .sys-label { color: var(--accent); }
+.sys-box .sys-value {
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-all;
+  min-height: 24px;
+}
+.sys-box.highlight .sys-value { color: var(--accent-dark); }
+.sys-box .sys-base {
+  font-size: .68rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Base selector (for sys converter) ── */
+.base-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.base-btn {
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border);
+  font-family: var(--mono);
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-label);
+  background: var(--bg);
+  transition: all .13s;
+}
+.base-btn:hover { border-color: var(--accent); color: var(--accent); }
+.base-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.sys-error {
+  color: #b91c1c;
+  font-size: .82rem;
+  margin-top: 8px;
+  display: none;
+  min-height: 0;
+}
+.sys-error.show { display: block; }
