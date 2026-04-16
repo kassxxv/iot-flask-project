@@ -1,64 +1,114 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Client Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — IoT Client</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/client.css') }}">
 </head>
 <body>
+<div class="app-shell">
 
-<div class="container">
-    <header>
-        <h1>IoT Client Dashboard</h1>
-        <p>Frontend B — Monitoring a história v reálnom čase</p>
-    </header>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <a href="/" class="sidebar-logo">
+      <div class="sidebar-logo-icon">📡</div>
+      <span class="sidebar-logo-text">IoT Panel</span>
+    </a>
+    <nav class="sidebar-nav">
+      <span class="nav-label">Nástroje</span>
+      <a href="/"       class="nav-link"><span class="icon">🧮</span> Kalkulačka</a>
+      <a href="/prevod" class="nav-link"><span class="icon">🔄</span> Prevodník</a>
+      <span class="nav-label">Monitoring</span>
+      <a href="/klient" class="nav-link active"><span class="icon">📊</span> Dashboard</a>
+    </nav>
+  </aside>
 
-    <div class="dashboard-grid">
-        <!-- LAST CALCULATION CARD -->
-        <div class="card">
-            <div class="card-title">🎯 Posledný výpočet</div>
-            <div id="last-calc" style="text-align: center; padding: 1rem;">
-                <div class="calc-val" id="last-calc-val" style="color: var(--accent-primary);">—</div>
-                <div id="last-calc-expr" style="color: var(--text-muted); margin-top: 0.5rem;">Čakám na dáta...</div>
-            </div>
-        </div>
-
-        <!-- STATUS CARD -->
-        <div class="card">
-            <div class="card-title">📡 Stav systému</div>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-muted);">Backend:</span>
-                    <span id="status-backend" class="badge badge-blue">Pripájanie...</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-muted);">Posledný refresh:</span>
-                    <span id="status-refresh" style="font-family: monospace;">—</span>
-                </div>
-            </div>
-        </div>
+  <!-- ── Main ── -->
+  <main class="main">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Monitoring v reálnom čase — obnovuje sa každých 5 sekúnd.</p>
     </div>
 
-    <!-- HISTORY TABLES -->
-    <div class="dashboard-grid" style="margin-top: 2rem;">
-        <div class="card">
-            <div class="card-title">📜 História výpočtov</div>
-            <div class="table-container" id="table-vypocty">
-                <p style="color: var(--text-muted); text-align: center; padding: 1rem;">Načítavam...</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">🔄 História prevodov</div>
-            <div class="table-container" id="table-prevody">
-                <p style="color: var(--text-muted); text-align: center; padding: 1rem;">Načítavam...</p>
-            </div>
-        </div>
+    <!-- Stat cards -->
+    <div class="grid-3" style="margin-bottom: 20px;">
+      <div class="stat-card accent">
+        <span class="label">Posledný výsledok</span>
+        <span class="value" id="last-result">—</span>
+        <span class="sub" id="last-expr">Čakám na dáta…</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Celkom výpočtov</span>
+        <span class="value" id="stat-calc">—</span>
+        <span class="sub">uložených v databáze</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Celkom prevodov</span>
+        <span class="value" id="stat-prevod">—</span>
+        <span class="sub">uložených v súbore</span>
+      </div>
     </div>
+
+    <!-- Status card -->
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title">📡 Stav systému</div>
+      <div class="status-row">
+        <span>Backend</span>
+        <span>
+          <span class="dot green" id="status-dot"></span>
+          <span class="badge badge-green" id="status-text">Pripájanie…</span>
+        </span>
+      </div>
+      <div class="status-row">
+        <span>Posledný refresh</span>
+        <span class="refresh-ts" id="last-refresh">—</span>
+      </div>
+    </div>
+
+    <!-- History tables -->
+    <div class="grid-2">
+      <!-- Calc history -->
+      <div class="card">
+        <div class="card-title">📜 História výpočtov</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Výraz</th>
+                <th>Výsledok</th>
+                <th>Čas</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-vypocty"></tbody>
+          </table>
+          <div class="empty" id="empty-vypocty" style="display:none;">Žiadne záznamy</div>
+        </div>
+      </div>
+
+      <!-- Conversion history -->
+      <div class="card">
+        <div class="card-title">🔄 História prevodov</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vstup</th>
+                <th>Typ</th>
+                <th>Výsledok</th>
+                <th>Čas</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-prevody"></tbody>
+          </table>
+          <div class="empty" id="empty-prevody" style="display:none;">Žiadne záznamy</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
-
-<script src="/static/js/client.js"></script>
-
+<script src="{{ url_for('static', filename='js/client.js') }}"></script>
 </body>
 </html>

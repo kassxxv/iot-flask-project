@@ -1,105 +1,88 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Admin Panel</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulačka — IoT Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 </head>
 <body>
+<div class="app-shell">
 
-<div class="container">
-    <header>
-        <h1>IoT Admin Panel</h1>
-        <p>Frontend A — Správa zariadení a výpočtov</p>
-    </header>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <a href="/" class="sidebar-logo">
+      <div class="sidebar-logo-icon">📡</div>
+      <span class="sidebar-logo-text">IoT Panel</span>
+    </a>
+    <nav class="sidebar-nav">
+      <span class="nav-label">Nástroje</span>
+      <a href="/"       class="nav-link active"><span class="icon">🧮</span> Kalkulačka</a>
+      <a href="/prevod" class="nav-link"><span class="icon">🔄</span> Prevodník</a>
+      <span class="nav-label">Monitoring</span>
+      <a href="/klient" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+    </nav>
+  </aside>
 
-    <div class="dashboard-grid">
-        <!-- CALCULATOR CARD -->
-        <div class="card">
-            <div class="card-title">🧮 Kalkulačka</div>
-            <div class="calc-display">
-                <div class="calc-expr" id="calc-expr"></div>
-                <div class="calc-val" id="calc-display">0</div>
-            </div>
-            <div class="calc-btns">
-                <button class="cb cb-mid" onclick="calcPress('AC')">AC</button>
-                <button class="cb cb-mid" onclick="calcPress('+/-')">+/-</button>
-                <button class="cb cb-mid" onclick="calcPress('%')">%</button>
-                <button class="cb cb-accent" onclick="calcPress('deleno')">÷</button>
-
-                <button class="cb cb-dark" onclick="calcPress('7')">7</button>
-                <button class="cb cb-dark" onclick="calcPress('8')">8</button>
-                <button class="cb cb-dark" onclick="calcPress('9')">9</button>
-                <button class="cb cb-accent" onclick="calcPress('krat')">×</button>
-
-                <button class="cb cb-dark" onclick="calcPress('4')">4</button>
-                <button class="cb cb-dark" onclick="calcPress('5')">5</button>
-                <button class="cb cb-dark" onclick="calcPress('6')">6</button>
-                <button class="cb cb-accent" onclick="calcPress('minus')">−</button>
-
-                <button class="cb cb-dark" onclick="calcPress('1')">1</button>
-                <button class="cb cb-dark" onclick="calcPress('2')">2</button>
-                <button class="cb cb-dark" onclick="calcPress('3')">3</button>
-                <button class="cb cb-accent" onclick="calcPress('plus')">+</button>
-
-                <button class="cb cb-dark" style="grid-column: span 2;" onclick="calcPress('0')">0</button>
-                <button class="cb cb-dark" onclick="calcPress('.')">.</button>
-                <button class="cb cb-accent" onclick="calcPress('=')">=</button>
-            </div>
-            <div id="calc-status" style="margin-top: 1rem; font-size: 0.875rem; color: var(--accent-primary);"></div>
-        </div>
-
-        <!-- CONVERTER CARD -->
-        <div class="card">
-            <div class="card-title">🔄 Prevodník jednotiek</div>
-            <form id="form-prevod" onsubmit="return handlePrevod(event)">
-                <div class="form-group">
-                    <label>Hodnota</label>
-                    <input type="text" id="prevod-hodnota" class="input" required placeholder="Zadajte číslo alebo HEX">
-                </div>
-                <div class="form-group">
-                    <label>Typ prevodu</label>
-                    <select id="prevod-typ" class="select">
-                        <optgroup label="IoT Senzory">
-                            <option value="c_to_f">°C → °F (Teplota)</option>
-                            <option value="hpa_to_mmhg">hPa → mmHg (Tlak)</option>
-                            <option value="ms_to_kmh">m/s → km/h (Rýchlosť)</option>
-                        </optgroup>
-                        <optgroup label="Číselné Sústavy">
-                            <option value="dec_to_bin">DEC → BIN</option>
-                            <option value="dec_to_hex">DEC → HEX</option>
-                            <option value="bin_to_dec">BIN → DEC</option>
-                            <option value="hex_to_dec">HEX → DEC</option>
-                        </optgroup>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Previesť a uložiť</button>
-            </form>
-            <div id="prevod-result" style="margin-top: 1.5rem; display: none;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary);" id="prevod-val"></div>
-                <div style="font-size: 0.875rem; color: var(--text-muted);" id="prevod-desc"></div>
-            </div>
-        </div>
+  <!-- ── Main ── -->
+  <main class="main">
+    <div class="page-header">
+      <h1>Kalkulačka</h1>
+      <p>Vykonajte základné aritmetické operácie — výsledky sa ukladajú do databázy.</p>
     </div>
 
-    <!-- HISTORY SECTION -->
-    <div class="card" style="margin-top: 2rem;">
-        <div class="card-title">📜 Posledné aktivity</div>
-        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-            <div>
-                <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Výpočty</h4>
-                <div class="table-container" id="historia-vypoctov"></div>
-            </div>
-            <div>
-                <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Prevody</h4>
-                <div class="table-container" id="historia-prevodov"></div>
-            </div>
+    <div class="grid-2">
+      <!-- Calculator card -->
+      <div class="card">
+        <div class="card-title">🧮 Vstup</div>
+        <div class="calc-display">
+          <div class="calc-expr" id="calc-expr"></div>
+          <div class="calc-val" id="calc-display">0</div>
         </div>
+        <div class="calc-btns">
+          <button class="cb cb-light" onclick="calcPress('AC')">AC</button>
+          <button class="cb cb-light" onclick="calcPress('+/-')">+/−</button>
+          <button class="cb cb-light" onclick="calcPress('%')">%</button>
+          <button class="cb cb-accent" onclick="calcPress('deleno')">÷</button>
+
+          <button class="cb cb-light" onclick="calcPress('7')">7</button>
+          <button class="cb cb-light" onclick="calcPress('8')">8</button>
+          <button class="cb cb-light" onclick="calcPress('9')">9</button>
+          <button class="cb cb-accent" onclick="calcPress('krat')">×</button>
+
+          <button class="cb cb-light" onclick="calcPress('4')">4</button>
+          <button class="cb cb-light" onclick="calcPress('5')">5</button>
+          <button class="cb cb-light" onclick="calcPress('6')">6</button>
+          <button class="cb cb-accent" onclick="calcPress('minus')">−</button>
+
+          <button class="cb cb-light" onclick="calcPress('1')">1</button>
+          <button class="cb cb-light" onclick="calcPress('2')">2</button>
+          <button class="cb cb-light" onclick="calcPress('3')">3</button>
+          <button class="cb cb-accent" onclick="calcPress('plus')">+</button>
+
+          <button class="cb cb-light span-2" onclick="calcPress('0')">0</button>
+          <button class="cb cb-light" onclick="calcPress('.')">.</button>
+          <button class="cb cb-primary" onclick="calcPress('=')">=</button>
+        </div>
+        <div class="calc-status" id="calc-status"></div>
+      </div>
+
+      <!-- Result + history card -->
+      <div class="card">
+        <div class="card-title">🎯 Výsledok</div>
+        <div class="result-big" id="result-big">—</div>
+        <div class="result-label" id="result-label">Zatiaľ žiadny výpočet</div>
+
+        <div class="card-title" style="margin-top: 24px;">📜 Posledné výpočty</div>
+        <div id="history-list">
+          <div class="empty loading">Načítavam…</div>
+        </div>
+      </div>
     </div>
+  </main>
+
 </div>
-
-<script src="/static/js/admin.js"></script>
-
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>
