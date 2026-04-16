@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kalkulacka — Panel by Fylyp</title>
+  <title>Frontend A — Panel by Fylyp</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prevod.css') }}">
 </head>
 <body>
 <canvas id="sakura-canvas"></canvas>
@@ -21,22 +22,22 @@
       </div>
     </a>
     <nav class="sidebar-nav">
-      <span class="nav-label">Nastroje</span>
-      <a href="/"       class="nav-link active">Kalkulacka</a>
-      <a href="/prevod" class="nav-link">Prevodnik</a>
-      <span class="nav-label">Monitoring</span>
-      <a href="/klient" class="nav-link">Dashboard</a>
+      <span class="nav-label">Frontend</span>
+      <a href="/"       class="nav-link active">Frontend A</a>
+      <a href="/klient" class="nav-link">Frontend B</a>
     </nav>
   </aside>
 
   <!-- Main -->
   <main class="main">
     <div class="page-header">
-      <h1>Kalkulacka</h1>
+      <h1>Frontend A</h1>
+      <p>Kalkulacka a prevodnik jednotiek — vysledky sa ukladaju do databazy a suboru.</p>
     </div>
 
-    <div class="grid-2">
-      <!-- Calculator card -->
+    <!-- ── Section: Calculator ── -->
+    <div class="section-title">Kalkulacka</div>
+    <div class="grid-2" style="margin-bottom: 28px;">
       <div class="card">
         <div class="card-title">Vstup</div>
         <div class="calc-display">
@@ -77,10 +78,66 @@
         <div class="result-label" id="result-label">Zatial ziadny vypocet</div>
       </div>
     </div>
-  </main>
 
+    <!-- ── Section: Unit Converter ── -->
+    <div class="section-title">Prevodnik jednotiek</div>
+    <div class="grid-2">
+      <div class="card card-accent">
+        <div class="card-title">Vstup</div>
+        <form id="prevod-form">
+          <div class="form-group">
+            <label for="prevod-typ">Typ prevodu</label>
+            <select id="prevod-typ" class="select-styled" onchange="selectType(this.value)">
+              <option value="c_to_f">&deg;C &rarr; &deg;F (Teplota)</option>
+              <option value="hpa_to_mmhg">hPa &rarr; mmHg (Tlak)</option>
+              <option value="ms_to_kmh">m/s &rarr; km/h (Rychlost)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hodnota</label>
+            <input type="number" id="prevod-hodnota" class="input-big" placeholder="0" step="any" required>
+            <div class="unit-label" id="input-unit">&deg;C</div>
+          </div>
+          <button type="submit" class="btn btn-primary">Previest</button>
+        </form>
+        <div class="error-msg" id="prevod-error"></div>
+        <div class="result-card" id="prevod-result">
+          <div class="res-label">Vysledok</div>
+          <div class="res-value" id="res-value">—</div>
+          <div class="res-desc"  id="res-desc"></div>
+        </div>
+      </div>
+
+      <!-- Number system converter -->
+      <div class="card">
+        <div class="card-title">Numeracne sustavy — DEC / BIN / OCT / HEX</div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>Zdrojova sustava</label>
+          <div class="base-btns">
+            <button class="base-btn" data-base="10" onclick="selectBase(10)">DEC <span style="opacity:.6;font-size:.7rem;">10</span></button>
+            <button class="base-btn" data-base="2"  onclick="selectBase(2)">BIN <span style="opacity:.6;font-size:.7rem;">2</span></button>
+            <button class="base-btn" data-base="8"  onclick="selectBase(8)">OCT <span style="opacity:.6;font-size:.7rem;">8</span></button>
+            <button class="base-btn" data-base="16" onclick="selectBase(16)">HEX <span style="opacity:.6;font-size:.7rem;">16</span></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Hodnota <span id="sys-hint" style="color:var(--text-muted); font-weight:400;">(desiatkov)</span></label>
+          <input type="text" id="sys-input" class="input-big" placeholder="0" autocomplete="off" oninput="convertSystems()">
+        </div>
+        <div class="sys-error" id="sys-error"></div>
+        <div class="sys-grid">
+          <div class="sys-box" id="sys-dec"><div class="sys-label">DEC</div><div class="sys-value" id="val-dec">—</div><div class="sys-base">zaklad 10</div></div>
+          <div class="sys-box" id="sys-bin"><div class="sys-label">BIN</div><div class="sys-value" id="val-bin">—</div><div class="sys-base">zaklad 2</div></div>
+          <div class="sys-box" id="sys-oct"><div class="sys-label">OCT</div><div class="sys-value" id="val-oct">—</div><div class="sys-base">zaklad 8</div></div>
+          <div class="sys-box" id="sys-hex"><div class="sys-label">HEX</div><div class="sys-value" id="val-hex">—</div><div class="sys-base">zaklad 16</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/prevod.js') }}"></script>
 <script src="{{ url_for('static', filename='js/sakura.js') }}"></script>
 </body>
 </html>

@@ -53,9 +53,6 @@ def index():
 def client():
     return render_template("frontend_b.html")
 
-@app.route("/prevod")
-def prevod_page():
-    return render_template("prevod.html")
 
 # --- CALCULATOR API (SQLite) ---
 @app.route("/api/vypocet")

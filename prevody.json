@@ -46,5 +46,53 @@
     "popis": "86878.0 hPa = 65163.71 mmHg",
     "cas": "2026-04-16 23:52:28",
     "id": 6
+  },
+  {
+    "vstup": "10",
+    "typ": "c_to_f",
+    "vysledok": 50.0,
+    "popis": "10.0 °C = 50.00 °F",
+    "cas": "2026-04-17 00:08:45",
+    "id": 7
+  },
+  {
+    "vstup": "10",
+    "typ": "hpa_to_mmhg",
+    "vysledok": 7.5,
+    "popis": "10.0 hPa = 7.50 mmHg",
+    "cas": "2026-04-17 00:08:45",
+    "id": 8
+  },
+  {
+    "vstup": "10",
+    "typ": "ms_to_kmh",
+    "vysledok": 36.0,
+    "popis": "10.0 m/s = 36.00 km/h",
+    "cas": "2026-04-17 00:08:45",
+    "id": 9
+  },
+  {
+    "vstup": "10",
+    "typ": "c_to_f",
+    "vysledok": 50.0,
+    "popis": "10.0 °C = 50.00 °F",
+    "cas": "2026-04-17 00:15:13",
+    "id": 10
+  },
+  {
+    "vstup": "10",
+    "typ": "hpa_to_mmhg",
+    "vysledok": 7.5,
+    "popis": "10.0 hPa = 7.50 mmHg",
+    "cas": "2026-04-17 00:15:13",
+    "id": 11
+  },
+  {
+    "vstup": "10",
+    "typ": "ms_to_kmh",
+    "vysledok": 36.0,
+    "popis": "10.0 m/s = 36.00 km/h",
+    "cas": "2026-04-17 00:15:13",
+    "id": 12
   }
 ]

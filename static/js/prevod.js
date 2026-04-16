@@ -4,13 +4,9 @@ const UNIT_TYPES = {
   ms_to_kmh:   { unit: 'm/s'    },
 };
 
-let selectedType = 'c_to_f';
-
 function selectType(typ) {
-  selectedType = typ;
-  document.querySelectorAll('.pill-opt').forEach(btn =>
-    btn.classList.toggle('selected', btn.dataset.typ === typ)
-  );
+  const sel = document.getElementById('prevod-typ');
+  if (sel && sel.value !== typ) sel.value = typ;
   const el = document.getElementById('input-unit');
   if (el) el.textContent = UNIT_TYPES[typ]?.unit ?? '';
 }
@@ -18,6 +14,7 @@ function selectType(typ) {
 async function handleUnitSubmit(e) {
   e.preventDefault();
   const hodnota = document.getElementById('prevod-hodnota').value.trim();
+  const typ     = document.getElementById('prevod-typ').value;
   const errEl   = document.getElementById('prevod-error');
   const resCard = document.getElementById('prevod-result');
 
@@ -27,7 +24,7 @@ async function handleUnitSubmit(e) {
   if (!hodnota) { showUnitError('Zadajte hodnotu!'); return; }
 
   try {
-    const res  = await fetch(`/api/prevod?hodnota=${encodeURIComponent(hodnota)}&typ=${selectedType}`);
+    const res  = await fetch(`/api/prevod?hodnota=${encodeURIComponent(hodnota)}&typ=${encodeURIComponent(typ)}`);
     const data = await res.json();
     if (data.chyba) { showUnitError(data.chyba); return; }
 
@@ -113,7 +110,8 @@ async function convertSystems() {
 
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
-  selectType(selectedType);
+  const sel = document.getElementById('prevod-typ');
+  if (sel) selectType(sel.value);
   selectBase(selectedBase);
   document.getElementById('prevod-form').addEventListener('submit', handleUnitSubmit);
 });
